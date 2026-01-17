@@ -53,6 +53,7 @@ const FetchArgsSchema = z.object({
     is_reload: zNumBoolean.default('1').describe('获取详情页的评论'),
     is_mix: zNumBoolean.default('0'),
     count: z.number().default(20).describe('获取数量，20为上限。但似乎没有影响'),
+    max_id: z.number().optional().describe('评论分页游标'),
     fetch_level: z.number().default(0),
     locale: z.enum(['zh_CN']),
   }),
