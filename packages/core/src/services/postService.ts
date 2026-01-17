@@ -224,21 +224,40 @@ export class PostService {
     isShowBulletIn: '0' | '2' = '2',
     count: number = 20,
   ): Promise<Comment[]> {
-    const data = await this.fetchService.comments({
-      uid: this.uid,
-      id: postId,
-      count,
-      is_show_bulletin: isShowBulletIn,
-      flow: '0',
-      fetch_level: 0,
-      is_mix: '0',
-      is_reload: '1',
-      locale: 'zh_CN',
-    })
+    const comments: Comment[] = []
+    const shouldFetchAll = !Number.isFinite(count) || count <= 0
+    const targetCount = shouldFetchAll ? Number.POSITIVE_INFINITY : count
+    let maxId: number | undefined
 
-    return data
-      .map(PostParser.parseComments)
-      .slice(0, count)
+    while (comments.length < targetCount) {
+      const requestCount = shouldFetchAll
+        ? 20
+        : Math.min(20, targetCount - comments.length)
+
+      const data = await this.fetchService.comments({
+        uid: this.uid,
+        id: postId,
+        count: requestCount,
+        is_show_bulletin: isShowBulletIn,
+        flow: '0',
+        fetch_level: 0,
+        is_mix: '0',
+        is_reload: '1',
+        locale: 'zh_CN',
+        ...(maxId ? { max_id: maxId } : {}),
+      })
+
+      const pageComments = data.data.map(PostParser.parseComments)
+      comments.push(...pageComments)
+
+      if (pageComments.length === 0 || !data.max_id || data.max_id === maxId) {
+        break
+      }
+
+      maxId = data.max_id
+    }
+
+    return comments.slice(0, targetCount)
   }
 
   async getFavorites(): Promise<Favorite[]> {

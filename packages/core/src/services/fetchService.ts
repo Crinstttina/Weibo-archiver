@@ -1,6 +1,5 @@
 import type {
   FetchArgs,
-  RawComment,
   RawComments,
   RawFavorite,
   RawFollowings,
@@ -121,8 +120,8 @@ export class FetchService {
    * 关于 is_show_bulletin 和热评问题见#17
    * @see https://github.com/Chilfish/Weibo-archiver/issues/17
    */
-  async comments(args: FetchArgs['postComments']): Promise<RawComment[]> {
-    const { data } = await this.fetcher<RawComments['data'], FetchArgs['postComments']>(
+  async comments(args: FetchArgs['postComments']): Promise<RawComments> {
+    const { data } = await this.fetcher<RawComments, FetchArgs['postComments']>(
       FETCH_PATH.POST_COMMENTS,
       args,
     )
